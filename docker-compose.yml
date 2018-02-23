@@ -1,0 +1,35 @@
+version: '3.2'
+
+services:
+
+  # création du container base de données, de type postgres version 10.2 basée sur AlpineLinux
+  db:
+    image: postgres:10.2-alpine
+    # partage du dossier local ./docker_volumes/postgresql/data avec le dossier du container /var/lib/postgresql/data
+    # si jamais le container crash, la DB est sauvegardée localement
+    volumes:
+      - type: bind
+        source: ./docker_volumes/postgresql/data
+        target: /var/lib/postgresql/data
+
+  # création du container de l'appli web go
+  web:
+    # comme l'image de notre appli n'est pas présente dans le répertoire officiel DockerHub, on doit build localement notre image
+    build: .
+    # ce container attend que le service "gotmpcrypt-db" soit entièrement démarré avant d'être lancé
+    depends_on:
+      - db
+    # création de la variable d'environnement, avec auto-résolution de l'IP du service gotmpcrypt-db, car ils sont "linkés" entre euix
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/postgres?sslmode=disable
+    # liaison des 2 services afin qu'ils puissent communiquer (ping)
+    links:
+      - db
+    # la machine qui lancera ces containers ouvrira son port 9090 et le reliera avec le port interne du container lui-même 9090
+    ports:
+      - "9090:9090"
+    # partage du dossier des uploads de l'appli web avec un répertoire local si jamais le container crash les données ne sont pas perdues
+    volumes:
+      - type: bind
+        source: ./docker_volumes/uploads
+        target: /go/src/github.com/smolveau/gotmpcrypt/uploads

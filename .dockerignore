@@ -1,0 +1,7 @@
+uploads/
+docker_volumes/
+.editorconfig
+.gitignore
+LICENSE
+README.md
+main_test.go
