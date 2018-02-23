@@ -1,0 +1,56 @@
+<html>
+<head>
+    <title>Chiffrement</title>
+</head>
+<body>
+<h1> Encrypt : </h1>
+<form id="formEncrypt" action="/encrypt" method="post" enctype="multipart/form-data">
+    <p>
+        Input File:
+        <input type="file" name="uploadfile" required>
+        <!-- <input type="file" name="keyFile"> -->
+    </p>
+        <select name="expiration" required>
+            <option value="1" selected>1 heure</option>
+            <option value="24">1 jour</option>
+            <option value="168">1 semaine</option>
+        </select>
+    <input type="submit">
+</form>
+
+<div id="result"></div>
+
+<h1> Decrypt : </h1>
+<form id="formDecrypt" action="/decrypt" method="post" enctype="json">
+    <p>
+        URL:
+        <input type="text" name="url" required>
+        <!-- <input type="file" name="keyFile"> -->
+    </p>
+    <p>
+        Key String :
+        <input type="text" name="key" required>
+    </p>
+
+    <input type="submit">
+</form>
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+    document.getElementById('formEncrypt').addEventListener("submit", function(e){
+        e.preventDefault()
+        var form = e.target
+        var data = new FormData(form)
+
+        var request = new XMLHttpRequest()
+
+        request.onreadystatechange = function(){
+            document.getElementById("result").innerText = request.responseText
+        }
+
+        request.open(form.method, form.action)
+        request.send(data)
+    })
+})
+</script>
+</body>
+
