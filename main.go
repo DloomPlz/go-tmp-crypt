@@ -50,7 +50,7 @@ func (e ErrorResponse) Log() {
 	// TODO : Print le JSON de log
 	// Mettre en DB ?
 	// utiliser logrus
-	fmt.Println(e.err)
+	fmt.Println(e.Description)
 
 }
 
@@ -63,6 +63,17 @@ func (e ErrorResponse) Send() {
 	http.Error(e.w, string(respJSON), e.Status)
 }
 
+func handleError(w http.ResponseWriter, desc string, status int, err error) {
+	errResponse := ErrorResponse{
+		Description: desc,
+		Status:      status,
+		err:         err,
+		w:           w,
+	}
+	errResponse.Log()
+	errResponse.Send()
+}
+
 func encryptRoute(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "POST" {
@@ -72,9 +83,6 @@ func encryptRoute(w http.ResponseWriter, r *http.Request) {
 		var expireDuration int
 		var key []byte
 		var cryptFileInfo FileInfo
-		errResponse := ErrorResponse{
-			w: w,
-		}
 
 		r.ParseMultipartForm(32 << 20)
 
@@ -84,11 +92,8 @@ func encryptRoute(w http.ResponseWriter, r *http.Request) {
 		expireDuration, err = strconv.Atoi(r.FormValue("expiration"))
 		if err != nil || (expireDuration != 1 && expireDuration != 24 && expireDuration != 168) {
 			// la durée d'expiration n'a pas pu être transformée en Int
-			errResponse.Description = "La durée d'expiration est invalide. Veuillez rentrer 1,24,ou 168."
-			errResponse.Status = http.StatusBadRequest
-			errResponse.err = err
-			errResponse.Log()
-			errResponse.Send()
+			handleError(w, "La durée d'expiration est invalide. Veuillez rentrer 1,24,ou 168.", http.StatusBadRequest, err)
+			return
 		}
 
 		// date de fin = durée de vie + date maintenant
@@ -107,9 +112,8 @@ func encryptRoute(w http.ResponseWriter, r *http.Request) {
 			if err == nil {
 				// URL déjà prise
 				// Logger le fait qu'une URL était déja prise (no break)
-				errResponse.Description = "L'URL générée est déja prise."
-				errResponse.err = err
-				errResponse.Log()
+				handleError(w, "L'URL générée est déja prise.", http.StatusInternalServerError, err)
+				return
 				// 1 chance sur 20^61 de trouver la même combinaison
 			} else {
 				urlIsTaken = false
@@ -118,10 +122,8 @@ func encryptRoute(w http.ResponseWriter, r *http.Request) {
 		}
 		if tries >= 10 {
 			// After 10 attempts, no free url
-			errResponse.Description = http.StatusText(http.StatusInternalServerError)
-			errResponse.Status = http.StatusInternalServerError
-			errResponse.Log()
-			errResponse.Send()
+			handleError(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError, err)
+			return
 		}
 
 		nonce := bytes.Repeat([]byte{0}, 12)
@@ -129,29 +131,21 @@ func encryptRoute(w http.ResponseWriter, r *http.Request) {
 		if _, err = io.ReadFull(cryptoRand.Reader, key); err != nil {
 			// Pas réussi à générer une clé aléatoire de 32 bits
 			// Error 500
-			errResponse.Description = "Echec de la création de la clé aléatoire de 32 bits."
-			errResponse.Status = http.StatusInternalServerError
-			errResponse.err = err
-			errResponse.Log()
-			errResponse.Send()
+			handleError(w, "Echec de la création de la clé aléatoire de 32 bits.", http.StatusInternalServerError, err)
+			return
 		}
 		cipherAES, err := aes.NewCipher(key)
 		if err != nil {
 			// Fail to create cipher error 500
-			errResponse.Description = "Echec de la création du cipher."
-			errResponse.Status = http.StatusInternalServerError
-			errResponse.err = err
-			errResponse.Log()
+			handleError(w, "Echec de la création du cipher.", http.StatusInternalServerError, err)
+			return
 
 		}
 		AESgcm, err := cipher.NewGCM(cipherAES)
 		if err != nil {
 			// Fail to create GCM error 500
-			errResponse.Description = "Echec de la création du GCM."
-			errResponse.Status = http.StatusInternalServerError
-			errResponse.err = err
-			errResponse.Log()
-
+			handleError(w, "Echec de la création du GCM.", http.StatusInternalServerError, err)
+			return
 		}
 
 		// Récupérer le fichier
@@ -159,22 +153,16 @@ func encryptRoute(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			// Failed to get a file
 			// Error 400
-			errResponse.Description = "Echec lors de la récupération du fichier."
-			errResponse.Status = http.StatusBadRequest
-			errResponse.err = err
-			errResponse.Log()
-			errResponse.Send()
+			handleError(w, "Echec lors de la récupération du fichier.", http.StatusBadRequest, err)
+			return
 		}
 		defer uploadedFile.Close()
 
 		uploadedFileBuffer := bytes.NewBuffer(nil)
 		if _, err := io.Copy(uploadedFileBuffer, uploadedFile); err != nil {
 			// Failed to upload the file
-			errResponse.Description = "Echec lors de l'upload du fichier."
-			errResponse.Status = http.StatusInternalServerError
-			errResponse.err = err
-			errResponse.Log()
-
+			handleError(w, "Echec lors de l'upload du fichier.", http.StatusInternalServerError, err)
+			return
 		}
 
 		cryptFileBuffer := AESgcm.Seal(nil, nonce, uploadedFileBuffer.Bytes(), nil)
@@ -187,22 +175,16 @@ func encryptRoute(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			// Failed to write crypted file to disk
 			// Error 500
-			errResponse.Description = "Echec lors de l'écriture du fichier crypté dans le disque."
-			errResponse.Status = http.StatusInternalServerError
-			errResponse.err = err
-			errResponse.Log()
-
+			handleError(w, "Echec lors de l'écriture du fichier crypté dans le disque.", http.StatusInternalServerError, err)
+			return
 		}
 		// Ajout de ce fichier en DB
 		err = db.Insert(&cryptFileInfo)
 		if err != nil {
 			// Failed to insert fileInfo into DB
 			// Error 500
-			errResponse.Description = "Echec lors de l'insertion des données dans la base de données."
-			errResponse.Status = http.StatusInternalServerError
-			errResponse.err = err
-			errResponse.Log()
-
+			handleError(w, "Echec lors de l'insertion des données dans la base de données.", http.StatusInternalServerError, err)
+			return
 		}
 
 		// renvoyer URL + Date expiration + clé
@@ -216,11 +198,8 @@ func encryptRoute(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			// Failed to create JSON Struct
 			// Error 500
-			errResponse.Description = "Echec lors de la création du JSON (élément de réponse)."
-			errResponse.Status = http.StatusInternalServerError
-			errResponse.err = err
-			errResponse.Log()
-
+			handleError(w, "Echec lors de la création du JSON (élément de réponse).", http.StatusInternalServerError, err)
+			return
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -251,23 +230,17 @@ func decryptRoute(w http.ResponseWriter, r *http.Request) {
 		if url == "" {
 
 			// Répondre que l'url est vide
-			errResponse.Description = "L'URL est vide."
-			errResponse.Status = http.StatusBadRequest
-			errResponse.err = err
-			errResponse.Log()
-			errResponse.Send()
+
+			handleError(w, "L'URL est vide.", http.StatusBadRequest, err)
+			return
 		}
 
 		//Récuperer URL dans DB + path du fichier + date de fin
 		err = db.Model(&cryptFileInfo).Where("url = ?", url).First()
 		if err != nil {
 			// URL cherchée pas dans DB
-			errResponse.Description = "URL Invalide."
-
-			errResponse.err = err
-			errResponse.Log()
-
-			// Répondre que l'url est invalide
+			handleError(w, "URL Invalide", http.StatusBadRequest, err)
+			return
 		}
 		//si date de fin dépassée (maintenant supérieur à date fin)
 		if cryptFileInfo.ExpirationDate.Before(time.Now().Local()) {
@@ -284,73 +257,50 @@ func decryptRoute(w http.ResponseWriter, r *http.Request) {
 				errResponse.Log()
 			}
 			// répondre que la date est dépassée
-			errResponse.Description = "La date d'expiration est dépassée."
-			errResponse.err = err
-			errResponse.Log()
-			errResponse.Send()
+			handleError(w, "La date d'expiration est dépassée.", http.StatusBadRequest, err)
+			return
 		}
 		//Ask for key
 		key := r.FormValue("key")
 		if key == "" {
-
 			// Répondre que la key est vide
-			errResponse.Description = "La clé est vide."
-			errResponse.Status = http.StatusBadRequest
-			errResponse.err = err
-			errResponse.Log()
-			errResponse.Send()
+			handleError(w, "La clé est vide.", http.StatusBadRequest, err)
+			return
 		}
 		//Vérifier les caractéristiques de la clé
 		keyBytes, err := hex.DecodeString(key)
 		if err != nil || len(keyBytes) != 32 {
 			// Répondre que la clé n'est pas valide
-			errResponse.Description = "La clé est non valide."
-			errResponse.Status = http.StatusBadRequest
-			errResponse.err = err
-			errResponse.Log()
-			errResponse.Send()
+			handleError(w, "La clé est non valide.", http.StatusBadRequest, err)
+			return
 		}
 		//Déchiffrer le fichier
 		// create AES-GCM instance
 		cipherAES, err := aes.NewCipher(keyBytes)
 		if err != nil {
-			errResponse.Description = "La création du cipherAES à échoué."
-			errResponse.Status = http.StatusInternalServerError
-			errResponse.err = err
-			errResponse.Log()
-
+			handleError(w, "La création du cipherAES à échoué.", http.StatusInternalServerError, err)
+			return
 		}
 		AESgcm, err := cipher.NewGCM(cipherAES)
 		if err != nil {
-			errResponse.Description = "La création du GCM à échoué."
-			errResponse.Status = http.StatusInternalServerError
-			errResponse.err = err
-			errResponse.Log()
-
-			//Répondre qu'il y eu une erreur
+			handleError(w, "La création du GCM à échoué.", http.StatusInternalServerError, err)
+			return
 		}
 		// open input file
 		cryptedFileBytes, err := ioutil.ReadFile(cryptFileInfo.Path)
 		if err != nil {
 			// Répondre qu'il y a eu une erreur interne lors de l'ouverture du fichier
-			errResponse.Description = "Erreur interne lors de l'ouverture du fichier."
-			errResponse.Status = http.StatusInternalServerError
-			errResponse.err = err
-			errResponse.Log()
+			handleError(w, "Erreur interne lors de l'ouverture du fichier.", http.StatusInternalServerError, err)
+			return
 		}
 		// Dechiffrement
 		nonce := bytes.Repeat([]byte{0}, 12)
 		decryptedFileBytes, err := AESgcm.Open(nil, nonce, cryptedFileBytes, nil)
 		if err != nil {
-			errResponse.Description = "Dechiffrement impossible. La clé n'est pas valable."
-			errResponse.Status = http.StatusBadRequest
-			errResponse.err = err
-			errResponse.Log()
-			errResponse.Send()
 			// Répondre que la clé n'est pas valable
-
+			handleError(w, "Dechiffrement impossible. La clé n'est pas valable.", http.StatusBadRequest, err)
+			return
 		}
-
 		//Envoyer le fichier
 		w.Header().Set("Content-Disposition", `attachment; filename="`+cryptFileInfo.Filename+`"`)
 		//w.Header().Set("Content-Length", strconv.Itoa(len(decryptedFileBytes)/1024))
@@ -359,10 +309,8 @@ func decryptRoute(w http.ResponseWriter, r *http.Request) {
 		//Envoie du fichier au client
 		if _, err = w.Write(decryptedFileBytes); err != nil {
 			// Upload a crash
-			errResponse.Description = "L'upload du fichier a rencontré une erreur."
-			errResponse.Status = http.StatusInternalServerError
-			errResponse.err = err
-			errResponse.Log()
+			handleError(w, "L'upload du fichier a rencontré une erreur.", http.StatusInternalServerError, err)
+			return
 		}
 
 	}
@@ -404,9 +352,9 @@ func main() {
 	}
 
 	mux := http.NewServeMux()
+	mux.Handle("/", http.FileServer(http.Dir("./static/")))
 	mux.HandleFunc("/encrypt", encryptRoute)
 	mux.HandleFunc("/decrypt", decryptRoute)
 	handler := cors.Default().Handler(mux)
 	http.ListenAndServe(":9090", handler)
-
 }
