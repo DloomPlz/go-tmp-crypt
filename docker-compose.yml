@@ -1,16 +1,25 @@
-version: '3.2'
+version: '3.3'
 
 services:
 
   # création du container base de données, de type postgres version 10.2 basée sur AlpineLinux
   db:
     image: postgres:10.2-alpine
+    networks:
+     - backend
+    restart:
+      always
     # partage du dossier local ./docker_volumes/postgresql/data avec le dossier du container /var/lib/postgresql/data
     # si jamais le container crash, la DB est sauvegardée localement
     volumes:
       - type: bind
         source: ./docker_volumes/postgresql/data
         target: /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
 
   # création du container de l'appli web go
   web:
@@ -23,8 +32,10 @@ services:
     environment:
       DATABASE_URL: postgres://postgres:postgres@db:5432/postgres?sslmode=disable
     # liaison des 2 services afin qu'ils puissent communiquer (ping)
-    links:
-      - db
+    networks:
+     - backend
+    restart:
+      always
     # la machine qui lancera ces containers ouvrira son port 9090 et le reliera avec le port interne du container lui-même 9090
     ports:
       - "9090:9090"
@@ -33,3 +44,6 @@ services:
       - type: bind
         source: ./docker_volumes/uploads
         target: /go/src/github.com/smolveau/gotmpcrypt/uploads
+
+networks:
+  backend:
