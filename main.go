@@ -340,14 +340,19 @@ func main() {
 		panic(err)
 	}
 	db = pg.Connect(db_options)
-	if err != nil {
-		panic(err)
-	}
 	defer db.Close()
 
 	// Create Schema in db
-	err = createSchema(db)
+	for retries := 0; retries < 3; retries++ {
+		err = createSchema(db)
+		if err != nil {
+			time.Sleep(10 * time.Second)
+		} else {
+			break
+		}
+	}
 	if err != nil {
+		fmt.Println("Failed to connect to DB after 3 retries.")
 		panic(err)
 	}
 
