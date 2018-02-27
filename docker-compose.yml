@@ -12,9 +12,7 @@ services:
     # partage du dossier local ./docker_volumes/postgresql/data avec le dossier du container /var/lib/postgresql/data
     # si jamais le container crash, la DB est sauvegardée localement
     volumes:
-      - type: bind
-        source: ./docker_volumes/postgresql/data
-        target: /var/lib/postgresql/data
+      - ./docker_volumes/postgresql/data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD", "pg_isready -U postgres"]
       interval: 30s
@@ -41,9 +39,7 @@ services:
       - "9090:9090"
     # partage du dossier des uploads de l'appli web avec un répertoire local si jamais le container crash les données ne sont pas perdues
     volumes:
-      - type: bind
-        source: ./docker_volumes/uploads
-        target: /go/src/github.com/smolveau/gotmpcrypt/uploads
+      - ./docker_volumes/uploads:/go/src/github.com/smolveau/gotmpcrypt/uploads
 
 networks:
   backend:
