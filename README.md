@@ -9,6 +9,7 @@ Golang web application to store encrypted files with an expiration date
 ```bash
 $ git clone https://github.com/smolveau/go-tmp-crypt.git
 $ cd go-tmp-crypt
+$ docker-compose down
 $ docker-compose up -d
 ```
 
