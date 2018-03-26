@@ -16,7 +16,7 @@ $ docker-compose up -d --build
 Service will be available on localhost:9090 (if you don't use Virtual Box).
 
 Otherwise, it will be available on the IP of the VM:9090.
-You can find it via kitematic: launch it, then take the IP address of the VM **"go_tmpcrypt_db"**.
+You can find it via kitematic: launch it, then take the IP address of the VM **"go_tmpcrypt_web"**.
 
 ### Stack
 

@@ -18,6 +18,9 @@ $(function(){
 		step(2);
 	});
 
+	// if( document.getElementById("inputEncrypt").files.length != 0 ){
+	// 	step(3)
+	// }
 
 	/* The back button */
 

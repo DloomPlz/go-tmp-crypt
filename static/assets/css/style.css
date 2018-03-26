@@ -276,7 +276,7 @@ body.decrypt #step2{
 }
 
 #step3{
-	background-color:#d5d788;
+	background-color:#db5646;
 }
 
 #step3 input[type=password]{
@@ -293,6 +293,11 @@ body.decrypt #step2{
 	box-shadow: 3px 3px 0 rgba(0,0,0,0.05);
 	font-size: 36px;
 	color: #555;
+}
+
+#step3 .content p{
+	padding-top: 1%;
+	font-size: 200%;
 }
 
 #step4{

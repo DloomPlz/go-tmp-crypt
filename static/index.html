@@ -9,7 +9,7 @@
 
 	<link href="http://fonts.googleapis.com/css?family=Raleway:400,700" rel="stylesheet" />
 	<link href="assets/css/style.css" rel="stylesheet" />
-
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 </head>
 
 <body>
@@ -47,16 +47,7 @@
 					</select>
 					<input id="submitEncrypt" type="submit">
 				</form>
-				<!-- div to display the expiration date of file -->
-				<div id="resultDate"></div>
-
 				<div id="preResult"></div>
-				
-				<!-- div to display the URL -->
-				<div id="resultURL" style="width: 40%; height: 30%; float:left; padding-top: 2%;word-wrap:break-word;display:inline-block;"></div>
-
-				<!-- div to display the key string -->
-				<div id="resultKey" style="width: 40%; height: 30%; float:right; padding-right: 10%; padding-top: 2%;word-wrap:break-word;display:inline-block;"></div>
 			</div>
 			<div class="content if-decrypt">
 				<h1> Decrypt : </h1>
@@ -96,7 +87,7 @@
 							else{
 								x = document.getElementById("inputEncrypt").files[0].name;
 								document.getElementById("preResult").innerHTML = "Filename : <h3>" + x + "</h3><br>						Remember to give the URL and the key string through two different channels!";
-
+								$("#stage").css('top',(-(3-1)*100)+'%');
 							}
 							
 
@@ -104,11 +95,11 @@
 
 								var obj = JSON.parse(request.responseText)
 
-								document.getElementById("resultURL").innerHTML = "<p><h2>URL</h2><br> <b><h2>" + obj.url + "</h2></b></p>"
-								document.getElementById("resultKey").innerHTML = "<p><h2>Secret Key</h2><br> <b><h2>" + obj.key + "</h2></b></p>"
+								document.getElementById("resultURL").innerHTML = "<p><h2>URL</h2><br> <b><h2></p>" + obj.url + "<p></h2></b></p>"
+								document.getElementById("resultKey").innerHTML = "<p><h2>Secret Key</h2><br> <b><h2></p>" + obj.key + "<p></h2></b></p>"
 								var date = new Date(obj.expiration_date)
 								var dateFR = date.toLocaleString('fr-FR',{timeZOne:'Europe/Paris'})
-								document.getElementById("resultDate").innerHTML = "<p>Your file is available until: <b>" + dateFR + "</b></p>"
+								document.getElementById("resultDate").innerHTML = "<p>Your file is available until: <b></p>" + dateFR + "<p></b></p>"
 							}
 
 							request.open(form.method, form.action)
@@ -119,11 +110,28 @@
 			</div>
 
 		</div>
+
+		<div id="step3">
+
+			<div class="content">
+				<h1> Encryption: </h1>
+				<!-- div to display the expiration date of file -->
+				<div id="resultDate"></div>
+
+				<div id="preResult"></div>
+				
+				<!-- div to display the URL -->
+				<div id="resultURL"></div>
+
+				<!-- div to display the key string -->
+				<div id="resultKey"></div>
+			</div>
+		</div>
 	</div>
 
 </body>
 
-<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+
 <script src="assets/js/script.js"></script>
 
 </html>
