@@ -1,56 +1,127 @@
+<!DOCTYPE html>
 <html>
+
 <head>
-    <title>Chiffrement</title>
+	<meta charset="utf-8"/>
+	<title>Pause Crypto</title>
+
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+	<link href="http://fonts.googleapis.com/css?family=Raleway:400,700" rel="stylesheet" />
+	<link href="assets/css/style.css" rel="stylesheet" />
+
 </head>
+
 <body>
-<h1> Encrypt : </h1>
-<form id="formEncrypt" action="/encrypt" method="post" enctype="multipart/form-data">
-    <p>
-        Input File:
-        <input type="file" name="uploadfile" required>
-        <!-- <input type="file" name="keyFile"> -->
-    </p>
-        <select name="expiration" required>
-            <option value="1" selected>1 heure</option>
-            <option value="24">1 jour</option>
-            <option value="168">1 semaine</option>
-        </select>
-    <input type="submit">
-</form>
 
-<div id="result"></div>
+	<a class="back"></a>
 
-<h1> Decrypt : </h1>
-<form id="formDecrypt" action="/decrypt" method="post" enctype="json">
-    <p>
-        URL:
-        <input type="text" name="url" required>
-        <!-- <input type="file" name="keyFile"> -->
-    </p>
-    <p>
-        Key String :
-        <input type="text" name="key" required>
-    </p>
+	<div id="stage">
 
-    <input type="submit">
-</form>
-<script>
-document.addEventListener("DOMContentLoaded", function(){
-    document.getElementById('formEncrypt').addEventListener("submit", function(e){
-        e.preventDefault()
-        var form = e.target
-        var data = new FormData(form)
+		<div id="step1">
+			<div class="content">
+				<h1>What do you want to do?</h1>
+				<a class="button encrypt purple">Encrypt a file</a>
+				<a class="button decrypt magenta">Decrypt a file</a>
+			</div>
+		</div>
 
-        var request = new XMLHttpRequest()
+		<div id="step2">
 
-        request.onreadystatechange = function(){
-            document.getElementById("result").innerText = request.responseText
-        }
+			<div class="content if-encrypt">
+				<h1> Encrypt : </h1>
+				
+				<form id="formEncrypt" action="/encrypt" method="post" enctype="multipart/form-data" name="formEncryption">
+					<p>
+						<a class="button browse blue">Browse</a>
 
-        request.open(form.method, form.action)
-        request.send(data)
-    })
-})
-</script>
+						<input id="inputEncrypt" type="file" name="uploadfile">
+						<!-- <input type="file" name="keyFile"> -->
+					</p>
+					<select class="selector" name="expiration" required>
+						<option value="1" selected>1 heure</option>
+						<option value="24">1 jour</option>
+						<option value="168">1 semaine</option>
+					</select>
+					<input id="submitEncrypt" type="submit">
+				</form>
+				<!-- div to display the expiration date of file -->
+				<div id="resultDate"></div>
+
+				<div id="preResult"></div>
+				
+				<!-- div to display the URL -->
+				<div id="resultURL" style="width: 40%; height: 30%; float:left; padding-top: 2%;word-wrap:break-word;display:inline-block;"></div>
+
+				<!-- div to display the key string -->
+				<div id="resultKey" style="width: 40%; height: 30%; float:right; padding-right: 10%; padding-top: 2%;word-wrap:break-word;display:inline-block;"></div>
+			</div>
+			<div class="content if-decrypt">
+				<h1> Decrypt : </h1>
+
+				<form id="formDecrypt" action="/decrypt" method="post" enctype="json">
+					<div id="URL" style="width: 50%; height: 50%; float:left;">
+						<p>
+							<h2>URL:</h2><br>
+							<input type="text" name="url" required>
+							<!-- <input type="file" name="keyFile"> -->
+						</p>
+					</div>
+					<div id="keyString" style="width: 50%; height: 50%; float:right;">
+
+						<p>
+							<h2>Key String :</h2><br>
+							<input type="text" name="key" required>
+						</p>
+
+
+					</div><br>
+					<input type="submit">
+				</form>
+				<script>
+					document.addEventListener("DOMContentLoaded", function(){
+						document.getElementById('formEncrypt').addEventListener("submit", function(e){
+							e.preventDefault()
+							var form = e.target
+							var data = new FormData(form)
+
+							var request = new XMLHttpRequest()
+							
+							if( document.getElementById("inputEncrypt").files.length == 0 ){
+								document.getElementById("preResult").innerHTML = "No files selected. Please select a file.";
+								return false;
+							}
+							else{
+								x = document.getElementById("inputEncrypt").files[0].name;
+								document.getElementById("preResult").innerHTML = "Filename : <h3>" + x + "</h3><br>						Remember to give the URL and the key string through two different channels!";
+
+							}
+							
+
+							request.onreadystatechange = function(){
+
+								var obj = JSON.parse(request.responseText)
+
+								document.getElementById("resultURL").innerHTML = "<p><h2>URL</h2><br> <b><h2>" + obj.url + "</h2></b></p>"
+								document.getElementById("resultKey").innerHTML = "<p><h2>Secret Key</h2><br> <b><h2>" + obj.key + "</h2></b></p>"
+								var date = new Date(obj.expiration_date)
+								var dateFR = date.toLocaleString('fr-FR',{timeZOne:'Europe/Paris'})
+								document.getElementById("resultDate").innerHTML = "<p>Your file is available until: <b>" + dateFR + "</b></p>"
+							}
+
+							request.open(form.method, form.action)
+							request.send(data)
+						})
+					})
+				</script>
+			</div>
+
+		</div>
+	</div>
+
 </body>
 
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script src="assets/js/script.js"></script>
+
+</html>
