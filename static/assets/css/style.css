@@ -74,6 +74,9 @@ body{
 	width:200px;
 }
 
+input[type="file"] {
+    display: none;
+}
 
 
 .content{
@@ -85,9 +88,7 @@ body{
 }
 
 
-.content input[type=file]{
-	display:none;
-}
+
 
 input[type=text]{
     width: 80%;

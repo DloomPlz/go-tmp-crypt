@@ -33,9 +33,11 @@
 				
 				<form id="formEncrypt" action="/encrypt" method="post" enctype="multipart/form-data" name="formEncryption">
 					<p>
-						<a class="button browse blue">Browse</a>
+						<label class="button browse blue">
 
-						<input id="inputEncrypt" type="file" name="uploadfile">
+							<input id="inputEncrypt" type="file" name="uploadfile"/>
+							Browse
+						</label>
 						<!-- <input type="file" name="keyFile"> -->
 					</p>
 					<select class="selector" name="expiration" required>
