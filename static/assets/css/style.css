@@ -264,19 +264,19 @@ input[type=submit] {
 
 
 #step1{
-	background-color:#75c0d1;
+	background-color:#cba0f4;
 }
 
 body.encrypt #step2{
-	background-color: #5b4dd0;
+	background-color: #dea5f3;
 }
 
 body.decrypt #step2{
-	background-color: #bc44df;
+	background-color: #b49af5;
 }
 
 #step3{
-	background-color:#db5646;
+	background-color:#efabf2;
 }
 
 #step3 input[type=password]{
