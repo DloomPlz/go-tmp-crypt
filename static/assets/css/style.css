@@ -304,7 +304,8 @@ body.decrypt #step2{
 	background-color:#aa8cd8;
 }
 
-#step1 .content{	margin-top: -140px;}
+#step1 .content{	margin-top: -140px;
+    padding-top: 50px;}
 #step2 .content{	margin-top:-220px;}
 #step3 .content{	margin-top: -157px;}
 #step4 .content{	margin-top: -100px;}
