@@ -97,8 +97,7 @@
 								return false;
 							}
 							else{
-								x = document.getElementById("inputEncrypt").files[0].name;
-								document.getElementById("preResult").innerHTML = "Filename : <h3>" + x + "</h3><br>						Remember to give the URL and the key string through two different channels!";
+								
 								$("#stage").css('top',(-(3-1)*100)+'%');
 							}
 							
@@ -109,6 +108,8 @@
 
 								document.getElementById("resultURL").innerHTML = "<p><h2>URL</h2><br> <b><h2></p>" + obj.url + "<p></h2></b></p>"
 								document.getElementById("resultKey").innerHTML = "<p><h2>Secret Key</h2><br> <b><h2></p>" + obj.key + "<p></h2></b></p>"
+								x = document.getElementById("inputEncrypt").files[0].name;
+								document.getElementById("preResultstep3").innerHTML = "Filename : <h3>" + x + "</h3><br><h2>Remember to give the URL and the key string through two different channels!</h2>";
 								var date = new Date(obj.expiration_date)
 								var dateFR = date.toLocaleString('fr-FR',{timeZOne:'Europe/Paris'})
 								document.getElementById("resultDate").innerHTML = "<p>Your file is available until: <b></p>" + dateFR + "<p></b></p>"
@@ -130,10 +131,10 @@
 				<!-- div to display the expiration date of file -->
 				<div id="resultDate"></div>
 
-				<div id="preResult"></div>
+				<div id="preResultstep3"></div><br>
 				
 				<!-- div to display the URL -->
-				<div id="resultURL"></div>
+				<div id="resultURL"></div><br>
 
 				<!-- div to display the key string -->
 				<div id="resultKey"></div>
