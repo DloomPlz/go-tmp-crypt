@@ -42,7 +42,7 @@
 
 			<div class="content if-encrypt">
 				<h1> Encrypt : </h1>
-				
+
 				<form id="formEncrypt" action="/encrypt" method="post" enctype="multipart/form-data" name="formEncryption">
 					<p>
 						<label class="button browse blue">
@@ -53,11 +53,11 @@
 						<!-- <input type="file" name="keyFile"> -->
 					</p>
 					<select class="selector" name="expiration" required>
-						<option value="1" selected>1 heure</option>
-						<option value="24">1 jour</option>
-						<option value="168">1 semaine</option>
+						<option value="1" selected>1 Hour</option>
+						<option value="24">1 Day</option>
+						<option value="168">1 Week</option>
 					</select>
-					<input id="submitEncrypt" type="submit">
+					<input id="submitEncrypt" type="submit" value="Submit">
 				</form>
 				<div id="preResult"></div>
 			</div>
@@ -81,7 +81,7 @@
 
 
 					</div><br>
-					<input type="submit">
+					<input type="submit" value="Submit">
 				</form>
 				<script>
 					document.addEventListener("DOMContentLoaded", function(){
@@ -91,28 +91,28 @@
 							var data = new FormData(form)
 
 							var request = new XMLHttpRequest()
-							
+
 							if( document.getElementById("inputEncrypt").files.length == 0 ){
 								document.getElementById("preResult").innerHTML = "No files selected. Please select a file.";
 								return false;
 							}
 							else{
-								
+
 								$("#stage").css('top',(-(3-1)*100)+'%');
 							}
-							
+
 
 							request.onreadystatechange = function(){
 
 								var obj = JSON.parse(request.responseText)
 
-								document.getElementById("resultURL").innerHTML = "<p><h2>URL</h2><br> <b><h2></p>" + obj.url + "<p></h2></b></p>"
-								document.getElementById("resultKey").innerHTML = "<p><h2>Secret Key</h2><br> <b><h2></p>" + obj.key + "<p></h2></b></p>"
+								document.getElementById("resultURL").innerHTML = "<h2>URL</h2><br> <b><h2>" + obj.url + "</h2></b>"
+								document.getElementById("resultKey").innerHTML = "<h2>Secret Key</h2><br> <b><h2>" + obj.key + "</h2></b>"
 								x = document.getElementById("inputEncrypt").files[0].name;
 								document.getElementById("preResultstep3").innerHTML = "Filename : <h3>" + x + "</h3><br><h2>Remember to give the URL and the key string through two different channels!</h2>";
 								var date = new Date(obj.expiration_date)
 								var dateFR = date.toLocaleString('fr-FR',{timeZOne:'Europe/Paris'})
-								document.getElementById("resultDate").innerHTML = "<p>Your file is available until: <b></p>" + dateFR + "<p></b></p>"
+								document.getElementById("resultDate").innerHTML = "<h2>Your file is available until: <h2>" + dateFR + "</b>"
 							}
 
 							request.open(form.method, form.action)
@@ -128,16 +128,23 @@
 
 			<div class="content">
 				<h1> Encryption: </h1>
-				<!-- div to display the expiration date of file -->
-				<div id="resultDate"></div>
 
-				<div id="preResultstep3"></div><br>
-				
-				<!-- div to display the URL -->
-				<div id="resultURL"></div><br>
+				<div id="containerResults">
+                <!-- div to display the URL -->
+                	<div id="resultURL"></div>
 
-				<!-- div to display the key string -->
-				<div id="resultKey"></div>
+                <!-- div to display the key string -->
+                	<div id="resultKey"></div>
+				</div>
+                <div id="containerResults2">
+                    <!-- div to display the expiration date of file -->
+                    <div id="resultDate"></div>
+
+                    <div id="preResultstep3"></div><br>
+                </div>
+
+
+
 			</div>
 		</div>
 	</div>

@@ -307,10 +307,57 @@ body.decrypt #step2{
 #step1 .content{	margin-top: -140px;
     padding-top: 50px;}
 #step2 .content{	margin-top:-220px;}
-#step3 .content{	margin-top: -257px;}
+#step3 .content{	word-wrap: break-word;
+	margin-top: -257px;}
 #step4 .content{	margin-top: -100px;}
 
+#containerResults {
+	margin:0;
+	width:100%;
+	height:160px;
+	/*background-color: #dea5f3;*/
+}
 
+#containerResults2
+{
+	margin:0;
+	width:100%;
+	height:300px;
+	/*background-color: #f3a5e2;*/
+    word-wrap: break-word;
+}
+
+#containerResults2 h2
+{
+    font-size:2vw;
+}
+
+#resultDate
+{
+	padding-top: 2%;
+}
+#containerResults h2
+{
+	word-wrap: break-word;
+	padding-left: 2%;
+	padding-right: 5%;
+	padding-top:2%;
+}
+
+#resultURL
+{
+	float:left;
+	width:50%;
+
+
+}
+
+#resultKey
+{
+	float:left;
+	width:50%;
+
+}
 /*----------------------------
 	The Demo Footer
 -----------------------------*/
